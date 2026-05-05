@@ -1,142 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NDIE 6112 - Nampilin Detail Wilkerstat Express</title>
 
-  <!-- SEO Meta Tags -->
+  <!-- SEO & Meta Tags -->
   <meta name="description" content="NDIE 6112 adalah aplikasi pemetaan interaktif berbasis web untuk menampilkan detail wilayah kerja statistik (SLS) secara cepat dan akurat.">
-  <meta name="keywords" content="NDIE, Wilkerstat, SLS, Statistik, BPS, Pemetaan, GeoJSON, Leaflet, Kubu Raya">
   <meta name="author" content="Idrus Efendy">
-
-  <!-- Open Graph Meta (untuk sosial media preview) -->
-  <meta property="og:title" content="NDIE 6112 - Nampilin Detail Wilkerstat Ekspress">
-  <meta property="og:description" content="Tampilkan detail wilayah kerja statistik (SLS) dengan cepat menggunakan peta interaktif NDIE 6112.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://idruse.github.io/ndie6112">
-  <meta property="og:image" content="https://idruse.github.io/ndie6112/assets/preview.jpg">
-
-  <!-- Favicon -->
-  <link rel="icon" href="https://idruse.github.io/ndie6112/assets/favicon.png" type="image/png">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- Turf.js -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f8f7fc;
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f7fc; }
+    header, footer { 
+      background-color: #5e3a87; color: white; padding: 1em; text-align: center; 
+      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 70%);
     }
-
-    header, footer {
-      background-color: #5e3a87;
-      color: white;
-      padding: 1em;
-      text-align: center;
-      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 70%), radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 70%);
+    .search-container { text-align: center; margin: 1.5em auto; }
+    .search-container input[type="text"] { 
+      padding: 0.5em; margin: 0.5em 0.25em; width: 220px; max-width: 80%; 
+      border: 1px solid #ccc; border-radius: 5px; 
     }
-
-    .search-container {
-      text-align: center;
-      margin: 1.5em auto;
+    .search-container button { 
+      padding: 0.6em 1.2em; background-color: #5e3a87; color: white; 
+      border: none; border-radius: 5px; cursor: pointer; margin: 0.25em; 
     }
-
-    .search-container input[type="text"] {
-      padding: 0.5em;
-      margin: 0.5em 0.25em;
-      width: 220px;
-      max-width: 80%;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .search-container button {
-      padding: 0.6em 1.2em;
-      background-color: #5e3a87;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 0.25em;
-    }
-
-    .search-container button:hover {
-      background-color: #7a4bb5;
-    }
-
-    #map {
-      height: 80vh;
-      width: 100%;
-    }
-
-    .info {
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-
-    /* Legenda styling */
-    .legend {
-      background: white;
-      padding: 8px 12px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      font-size: 14px;
-      line-height: 1.4em;
-      max-width: 200px;
-    }
-
-    .legend-title {
-      font-weight: bold;
-      margin-bottom: 6px;
-      text-align: center;
-      color: #5e3a87;
-    }
-
-    .legend-item {
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      margin-bottom: 4px;
-      user-select: none;
-    }
-
-    .legend-color-box {
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      border-radius: 3px;
-      border: 1px solid #ccc;
-      flex-shrink: 0;
-    }
-
-    .legend-item.disabled .legend-color-box {
-      opacity: 0.3;
-      border-color: #999;
-    }
-
-    .legend-item.disabled {
-      color: #999;
-    }
+    .search-container button:hover { background-color: #7a4bb5; }
+    #map { height: 80vh; width: 100%; background: #e5e3df; }
+    .info { background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.3); color: #333; }
+    
+    /* Legend Styling */
+    .legend { background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); line-height: 18px; color: #333; }
+    .legend-title { font-weight: bold; margin-bottom: 5px; color: #5e3a87; text-align: center; }
+    .legend-item { cursor: pointer; display: flex; align-items: center; margin-bottom: 4px; }
+    .legend-color-box { width: 16px; height: 16px; margin-right: 8px; border-radius: 3px; opacity: 0.8; }
+    .legend-item.disabled { color: #999; text-decoration: line-through; }
 
     @media screen and (max-width: 600px) {
-      .search-container input[type="text"] {
-        width: 90%;
-      }
-
-      .search-container button {
-        width: 90%;
-        margin-top: 0.5em;
-      }
+      .search-container input[type="text"], .search-container button { width: 90%; }
     }
   </style>
 </head>
 <body>
+
   <header>
     <h1>NDIE 6112 - Nampilin Detail Wilkerstat Express</h1>
   </header>
@@ -145,8 +56,8 @@
     <input type="text" id="searchInput" placeholder="Cari berdasarkan ID SLS...">
     <button onclick="searchFeature()">Cari</button>
     <br>
-   <input type="text" id="koordinatInput" placeholder="Lat,Lng contoh: -0.228519, 109.432654">
-   <button onclick="searchByKoordinat()">Cari Koordinat</button>
+    <input type="text" id="koordinatInput" placeholder="Lat,Lng contoh: -0.228519, 109.432654">
+    <button onclick="searchByKoordinat()">Cari Koordinat</button>
     <button onclick="resetSearch()">Reset</button>
   </div>
 
@@ -158,228 +69,79 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // Koordinat pusat Kubu Raya
     const map = L.map('map').setView([-0.228519, 109.432654], 10);
 
-     /* OpenStreetMap (OSM) standar
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map); */
-
-     // Google Maps Satellite
-const googleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    subdomains:['mt0','mt1','mt2','mt3']
-}).addTo(map);
+    // --- GOOGLE SATELLITE BASEMAP CONFIG ---
+    // lyrs=y adalah tipe Hybrid (Satelit + Nama Jalan/Tempat)
+    // Gunakan lyrs=s jika ingin satelit murni tanpa tulisan
+    const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps'
+    }).addTo(map);
 
     let geojsonLayer;
     let currentHighlighted;
     let markerLatLng;
 
+    // Data Warna & Kode Pos sesuai input user
     const colorsByKecamatan = {
-      'BATU AMPAR': '#e74c3c',       // Merah
-      'KUALA MANDOR-B': '#af7ac5',   // Ungu
-      'KUBU': '#5dade2',             // Biru Muda
-      'RASAU JAYA': '#48c9b0',       // Tosca
-      'SUNGAI AMBAWANG': '#f4d03f',  // Kuning
-      'SUNGAI KAKAP': '#eb984e',     // Oranye
-      'SUNGAI RAYA': '#58d68d',      // Hijau
-      'TELUK PAKEDAI': '#aab7b8',    // Abu-abu Kebiruan
-      'TERENTANG': '#34495e'         // Biru Gelap/Navy
-};
+      'BATU AMPAR': '#e74c3c', 'KUALA MANDOR-B': '#af7ac5', 'KUBU': '#5dade2',
+      'RASAU JAYA': '#48c9b0', 'SUNGAI AMBAWANG': '#f4d03f', 'SUNGAI KAKAP': '#eb984e',
+      'SUNGAI RAYA': '#58d68d', 'TELUK PAKEDAI': '#aab7b8', 'TERENTANG': '#34495e'
+    };
 
-const kodePosByDesa = {
-  "PANCA ROBA": "78393",
-  "KOREK": "78393",
-  "BENGKAREK": "78393",
-  "PUGUK": "78393",
-  "PASAK": "78393",
-  "PASAK PIANG": "78393",
-  "PELITA JAYA": "78391",
-  "BINTANG MAS": "78391",
-  "RASAU JAYA UMUM": "78382",
-  "RASAU JAYA SATU": "78382",
-  "RASAU JAYA TIGA": "78382",
-  "PARIT KELADI": "78391",
-  "PUNGGUR KAPUAS": "78391",
-  "PINANG LUAR": "78383",
-  "RENGAS KAPUAS": "78391",
-  "AIR PUTIH": "78383",
-  "RADAK BARU": "78385",
-  "SUNGAI RENGAS": "78391",
-  "SEPAKAT BARU": "78391",
-  "TELUK KAPUAS": "78391",
-  "SUNGAI BEMBAN": "78383",
-  "LIMBUNG": "78391",
-  "SUNGAI KUPAH": "78391",
-  "SERUAT DUA": "78383",
-  "MEKAR SARI": "78391",
-  "SERUAT TIGA": "78383",
-  "SUNGAI NIPAH": "78384",
-  "JERUJU BESAR": "78391",
-  "MADU SARI": "78393",
-  "AMBAWANG": "78393",
-  "SUNGAI SELAMAT": "78393",
-  "MADURA": "78391",
-  "GUNUNG TAMANG": "78391",
-  "PASIR PUTIH": "78391",
-  "ARUS DERAS": "78385",
-  "SUNGAI KAKAP": "78391",
-  "PULAU LIMBUNG": "78391",
-  "SUNGAI DERAS": "78384",
-  "SUNGAI BELIDAK": "78391",
-  "SUNGAI ASAM": "78391",
-  "PAL SEMBILAN": "78391",
-  "OLAK OLAK KUBU": "78383",
-  "KAMPUNG BARU": "78383",
-  "SUNGAI ITIK": "78391",
-  "SUNGAI AMBANGAH": "78391",
-  "TANJUNG HARAPAN": "78385",
-  "KUALA DUA": "78391",
-  "TELUK PAKEDAI DUA": "78384",
-  "SUNGAI BULAN": "78391",
-  "TELUK PAKEDAI HULU": "78384",
-  "TEBANG KACANG": "78391",
-  "BETUAH": "78385",
-  "TELUK PAKEDAI SATU": "78384",
-  "PADANG TIKAR II": "78385",
-  "PADANG TIKAR I": "78385",
-  "TELUK NIBUNG": "78385",
-  "NIPAH PANJANG": "78385",
-  "SUNGAI JAWI": "78391",
-  "LINTANG BATANG": "78391",
-  "AMBARAWA": "78385",
-  "TASIK MALAYA": "78385",
-  "SUNGAI BESAR": "78385",
-  "SUNGAI MALAYA": "78391",
-  "AMPERA RAYA": "78391",
-  "KUALA MANDOR A": "78392",
-  "KUALA BAKUNG": "78391",
-  "SIMPANG RAYA": "78391",
-  "SUNGAI BEMBAN TIMUR": "78383",
-  "MENGKALANG JAMBU": "78383",
-  "PEMATANG TUJUH": "78382",
-  "RASAU JAYA DUA": "78382",
-  "SUKULANTING": "78391",
-  "BATU AMPAR": "78385",
-  "PERMATA JAYA": "78391",
-  "SUMBER AGUNG": "78385",
-  "MUARA BARU": "78391",
-  "SUNGAI KERAWANG": "78383",
-  "KALI BANDUNG": "78391",
-  "MENGKALANG": "78383",
-  "SUNGAI RAYA DALAM": "78391",
-  "MEKAR BARU": "78391",
-  "PULAU JAMBU": "78391",
-  "PARIT BARU": "78391",
-  "TANJUNG BERINGIN": "78385",
-  "MUARA TIGA": "78385",
-  "MEDAN MAS": "78385",
-  "SUNGAI ENAU A": "78392",
-  "PADI JAYA": "78392",
-  "SUNGAI ENAU": "78392",
-  "KUALA MANDOR B": "78392",
-  "RETOK": "78392",
-  "KUBU PADI": "78392",
-  "SIMPANG KANAN": "78391",
-  "DURIAN": "78391",
-  "PUNGGUR KECIL": "78391",
-  "PUNGGUR BESAR": "78391",
-  "JANGKANG SATU": "78383",
-  "TANJUNG SALEH": "78391",
-  "KALIMAS": "78391",
-  "TELUK NANGKA": "78383",
-  "PINANG DALAM": "78383",
-  "SUNGAI RAYA": "78391",
-  "JANGKANG DUA": "78383",
-  "TANJUNG BUNGA": "78384",
-  "ARANG LIMBUNG": "78391",
-  "DABONG": "78383",
-  "SEPUK LAUT": "78391",
-  "KUALA KARANG": "78384",
-  "KAPUR": "78391",
-  "SUNGAI TERUS": "78383",
-  "SUNGAI RADAK SATU": "78385",
-  "SELAT REMIS": "78384",
-  "TELUK GELAM": "78384",
-  "KUBU": "78383",
-  "TERENTANG HILIR": "78394",
-  "PERMATA": "78385",
-  "SUNGAI RADAK DUA": "78385",
-  "TERENTANG HULU": "78394",
-  "SUNGAI AMBAWANG KUALA": "78393",
-  "SERUAT SATU": "78383",
-  "SUNGAI DUNGUN": "78391",
-  "SUNGAI NIBUNG": "78384",
-  "JAWA TENGAH": "78391",
-  "TELUK EMPENING": "78394",
-  "TELUK BAKUNG": "78393",
-  "TELUK BAYUR": "78385",
-  "MEGA TIMUR": "78393",
-  "LINGGA": "78393"
-};
-    
+    const kodePosByDesa = {
+      "PANCA ROBA": "78393", "KOREK": "78393", "BENGKAREK": "78393", "PUGUK": "78393", "PASAK": "78393", "PASAK PIANG": "78393", "PELITA JAYA": "78391", "BINTANG MAS": "78391", "RASAU JAYA UMUM": "78382", "RASAU JAYA SATU": "78382", "RASAU JAYA TIGA": "78382", "PARIT KELADI": "78391", "PUNGGUR KAPUAS": "78391", "PINANG LUAR": "78383", "RENGAS KAPUAS": "78391", "AIR PUTIH": "78383", "RADAK BARU": "78385", "SUNGAI RENGAS": "78391", "SEPAKAT BARU": "78391", "TELUK KAPUAS": "78391", "SUNGAI BEMBAN": "78383", "LIMBUNG": "78391", "SUNGAI KUPAH": "78391", "SERUAT DUA": "78383", "MEKAR SARI": "78391", "SERUAT TIGA": "78383", "SUNGAI NIPAH": "78384", "JERUJU BESAR": "78391", "MADU SARI": "78393", "AMBAWANG": "78393", "SUNGAI SELAMAT": "78393", "MADURA": "78391", "GUNUNG TAMANG": "78391", "PASIR PUTIH": "78391", "ARUS DERAS": "78385", "SUNGAI KAKAP": "78391", "PULAU LIMBUNG": "78391", "SUNGAI DERAS": "78384", "SUNGAI BELIDAK": "78391", "SUNGAI ASAM": "78391", "PAL SEMBILAN": "78391", "OLAK OLAK KUBU": "78383", "KAMPUNG BARU": "78383", "SUNGAI ITIK": "78391", "SUNGAI AMBANGAH": "78391", "TANJUNG HARAPAN": "78385", "KUALA DUA": "78391", "TELUK PAKEDAI DUA": "78384", "SUNGAI BULAN": "78391", "TELUK PAKEDAI HULU": "78384", "TEBANG KACANG": "78391", "BETUAH": "78385", "TELUK PAKEDAI SATU": "78384", "PADANG TIKAR II": "78385", "PADANG TIKAR I": "78385", "TELUK NIBUNG": "78385", "NIPAH PANJANG": "78385", "SUNGAI JAWI": "78391", "LINTANG BATANG": "78391", "AMBARAWA": "78385", "TASIK MALAYA": "78385", "SUNGAI BESAR": "78385", "SUNGAI MALAYA": "78391", "AMPERA RAYA": "78391", "KUALA MANDOR A": "78392", "KUALA BAKUNG": "78391", "SIMPANG RAYA": "78391", "SUNGAI BEMBAN TIMUR": "78383", "MENGKALANG JAMBU": "78383", "PEMATANG TUJUH": "78382", "RASAU JAYA DUA": "78382", "SUKULANTING": "78391", "BATU AMPAR": "78385", "PERMATA JAYA": "78391", "SUMBER AGUNG": "78385", "MUARA BARU": "78391", "SUNGAI KERAWANG": "78383", "KALI BANDUNG": "78391", "MENGKALANG": "78383", "SUNGAI RAYA DALAM": "78391", "MEKAR BARU": "78391", "PULAU JAMBU": "78391", "PARIT BARU": "78391", "TANJUNG BERINGIN": "78385", "MUARA TIGA": "78385", "MEDAN MAS": "78385", "SUNGAI ENAU A": "78392", "PADI JAYA": "78392", "SUNGAI ENAU": "78392", "KUALA MANDOR B": "78392", "RETOK": "78392", "KUBU PADI": "78392", "SIMPANG KANAN": "78391", "DURIAN": "78391", "PUNGGUR KECIL": "78391", "PUNGGUR BESAR": "78391", "JANGKANG SATU": "78383", "TANJUNG SALEH": "78391", "KALIMAS": "78391", "TELUK NANGKA": "78383", "PINANG DALAM": "78383", "SUNGAI RAYA": "78391", "JANGKANG DUA": "78383", "TANJUNG BUNGA": "78384", "ARANG LIMBUNG": "78391", "DABONG": "78383", "SEPUK LAUT": "78391", "KUALA KARANG": "78384", "KAPUR": "78391", "SUNGAI TERUS": "78383", "SUNGAI RADAK SATU": "78385", "SELAT REMIS": "78384", "TELUK GELAM": "78384", "KUBU": "78383", "TERENTANG HILIR": "78394", "PERMATA": "78385", "SUNGAI RADAK DUA": "78385", "TERENTANG HULU": "78394", "SUNGAI AMBAWANG KUALA": "78393", "SERUAT SATU": "78383", "SUNGAI DUNGUN": "78391", "SUNGAI NIBUNG": "78384", "JAWA TENGAH": "78391", "TELUK EMPENING": "78394", "TELUK BAKUNG": "78393", "TELUK BAYUR": "78385", "MEGA TIMUR": "78393", "LINGGA": "78393"
+    };
+
     const activeKecamatan = {};
 
     function highlightFeature(layer) {
-      if (currentHighlighted) {
-        geojsonLayer.resetStyle(currentHighlighted);
-      }
+      if (currentHighlighted) { geojsonLayer.resetStyle(currentHighlighted); }
       currentHighlighted = layer;
-      layer.setStyle({
-        color: 'green',
-        weight: 3,
-        fillOpacity: 0.7
-      });
+      layer.setStyle({ color: '#2ecc71', weight: 4, fillOpacity: 0.6 });
       map.fitBounds(layer.getBounds());
     }
 
     function resetSearch() {
       document.getElementById('searchInput').value = '';
       document.getElementById('koordinatInput').value = '';
-      if (currentHighlighted) {
-        geojsonLayer.resetStyle(currentHighlighted);
-        currentHighlighted = null;
-      }
-      if (markerLatLng) {
-        map.removeLayer(markerLatLng);
-        markerLatLng = null;
-      }
-      map.setView([-0.228519,109.432654], 10);
+      if (currentHighlighted) { geojsonLayer.resetStyle(currentHighlighted); currentHighlighted = null; }
+      if (markerLatLng) { map.removeLayer(markerLatLng); markerLatLng = null; }
+      map.setView([-0.228519, 109.432654], 10);
     }
 
     function onEachFeature(feature, layer) {
       const props = feature.properties;
-      const namaDesaBersih = props.nmdesa ? props.nmdesa.trim() : "";
-      const kodePos = kodePosByDesa[namaDesaBersih] || "Kode Pos Tidak Terdaftar";
-      if (props && props.nmsls) {
-        const popupContent = `
-          <div class="info">
-            <strong>RT/RW:</strong> ${props.nmsls}<br>
-            <strong>Kelurahan:</strong> ${props.nmdesa}<br>
-            <strong>Kecamatan:</strong> ${props.nmkec}<br>
-            <strong>IDSLS:</strong> ${props.idsls}<br>
-            <strong>Kode Pos:</strong> ${kodePos}
-          </div>
-        `;
-        layer.bindPopup(popupContent);
-        layer.on('mouseover', () => layer.setStyle({ color: 'orange', weight: 2, fillOpacity: 0.5 }));
-        layer.on('mouseout', () => {
-          if (layer !== currentHighlighted) {
-            geojsonLayer.resetStyle(layer);
-          }
-        });
-        layer.on('click', () => layer.openPopup());
-      }
+      const namaDesa = props.nmdesa ? props.nmdesa.trim() : "";
+      const kodePos = kodePosByDesa[namaDesa] || "Tidak Terdata";
+      
+      const popupContent = `
+        <div class="info">
+          <strong>RT/RW:</strong> ${props.nmsls || '-'}<br>
+          <strong>Kelurahan:</strong> ${props.nmdesa || '-'}<br>
+          <strong>Kecamatan:</strong> ${props.nmkec || '-'}<br>
+          <strong>IDSLS:</strong> ${props.idsls || '-'}<br>
+          <strong>Kode Pos:</strong> ${kodePos}
+        </div>
+      `;
+      layer.bindPopup(popupContent);
+      
+      layer.on('mouseover', () => { if(layer !== currentHighlighted) layer.setStyle({ color: 'orange', weight: 3 }); });
+      layer.on('mouseout', () => { if(layer !== currentHighlighted) geojsonLayer.resetStyle(layer); });
     }
 
     function getPolygonStyle(feature) {
       const kec = feature.properties.nmkec;
-      const color = colorsByKecamatan[kec] || '#999999'; 
-      const isActive = activeKecamatan[kec] !== false; 
+      const color = colorsByKecamatan[kec] || '#999999';
+      const isActive = activeKecamatan[kec] !== false;
       return {
         color: color,
-        weight: 2,
-        fillOpacity: isActive ? 0.3 : 0,
+        weight: 1.5,
+        fillColor: color,
+        fillOpacity: isActive ? 0.4 : 0,
         opacity: isActive ? 1 : 0
       };
     }
@@ -398,121 +160,84 @@ const kodePosByDesa = {
           style: getPolygonStyle,
           onEachFeature: onEachFeature
         }).addTo(map);
-        window.geojsonData = data;
 
         addLegend();
       })
-      .catch(err => {
-        console.error('Gagal memuat GeoJSON:', err);
-        alert('Gagal memuat data wilayah.');
-      });
+      .catch(err => console.error('Gagal memuat GeoJSON:', err));
 
     function searchFeature() {
       const input = document.getElementById('searchInput').value.trim().toLowerCase();
       if (!input || !geojsonLayer) return;
-
       let found = false;
       geojsonLayer.eachLayer(layer => {
-        const props = layer.feature.properties;
-        if (props.idsls.toLowerCase() === input) {
+        if (layer.feature.properties.idsls.toLowerCase() === input) {
           highlightFeature(layer);
           layer.openPopup();
-          map.flyTo(layer.getBounds().getCenter(), 17, { duration: 1.5 });
+          map.flyTo(layer.getBounds().getCenter(), 17);
           found = true;
         }
       });
-
       if (!found) alert('ID SLS tidak ditemukan.');
     }
 
     function searchByKoordinat() {
-  const input = document.getElementById('koordinatInput').value.trim();
-  const [latStr, lngStr] = input.split(',');
+      const input = document.getElementById('koordinatInput').value.trim();
+      const [latStr, lngStr] = input.split(',');
+      const lat = parseFloat(latStr);
+      const lng = parseFloat(lngStr);
 
-  const lat = parseFloat(latStr);
-  const lng = parseFloat(lngStr);
+      if (isNaN(lat) || isNaN(lng)) {
+        alert("Format: -0.228519, 109.432654");
+        return;
+      }
 
-  if (isNaN(lat) || isNaN(lng)) {
-    alert("Format koordinat yang benar: -0.228519,109.432654");
-    return;
-  }
+      const point = turf.point([lng, lat]);
+      let matchedFeature = null;
+      let matchedLayer = null;
 
-  const point = turf.point([lng, lat]);
-  let matchedFeature = null;
-  let matchedLayer = null;
+      geojsonLayer.eachLayer(layer => {
+        if (turf.booleanPointInPolygon(point, layer.feature)) {
+          matchedFeature = layer.feature.properties;
+          matchedLayer = layer;
+        }
+      });
 
-  geojsonLayer.eachLayer(layer => {
-    const polygon = layer.feature;
-    if (turf.booleanPointInPolygon(point, polygon)) {
-      matchedFeature = polygon.properties;
-      matchedLayer = layer;
+      if (markerLatLng) map.removeLayer(markerLatLng);
+      
+      let popupContent = `<div class="info"><strong>Koordinat:</strong> ${lat}, ${lng}<br><hr>`;
+      if (matchedFeature) {
+        popupContent += `<strong>RT/RW:</strong> ${matchedFeature.nmsls}<br><strong>Desa:</strong> ${matchedFeature.nmdesa}`;
+        highlightFeature(matchedLayer);
+      } else {
+        popupContent += `<em>Luar Wilkerstat Kubu Raya</em>`;
+      }
+      popupContent += `</div>`;
+
+      markerLatLng = L.marker([lat, lng]).addTo(map).bindPopup(popupContent).openPopup();
+      map.flyTo([lat, lng], 17);
     }
-  });
- const kodePos = matchedFeature ? (kodePosByDesa[matchedFeature.nmdesa] || "Tidak diketahui") : "-";
-  if (markerLatLng) map.removeLayer(markerLatLng);
-
-  let popupContent = `
-    <div class="info">
-      <strong>Latitude:</strong> ${lat}<br>
-      <strong>Longitude:</strong> ${lng}<br><hr>
-  `;
-
-  if (matchedFeature) {
-    popupContent += `
-      <strong>RT/RW:</strong> ${matchedFeature.nmsls}<br>
-      <strong>Kelurahan:</strong> ${matchedFeature.nmdesa}<br>
-      <strong>Kecamatan:</strong> ${matchedFeature.nmkec}<br>
-      <strong>IDSLS:</strong> ${matchedFeature.idsls}<br>
-      <strong>Kode pos:</strong> ${kodePos}
-    `;
-  } else {
-    popupContent += `<em>Lokasi tidak berada di dalam Wilkerstat Kabupaten Kubu Raya.</em>`;
-  }
-
-  popupContent += `</div>`;
-
-  markerLatLng = L.marker([lat, lng]).addTo(map).bindPopup(popupContent).openPopup();
-
-  if (matchedLayer) highlightFeature(matchedLayer);
-
-  map.flyTo([lat, lng], 17, { duration: 1.5 });
-}
 
     function addLegend() {
       const legend = L.control({ position: 'bottomright' });
-
       legend.onAdd = function () {
         const div = L.DomUtil.create('div', 'legend');
-        div.innerHTML = '<div class="legend-title">Legenda Kecamatan</div>';
-
+        div.innerHTML = '<div class="legend-title">Kecamatan</div>';
         for (const [kec, color] of Object.entries(colorsByKecamatan)) {
-          const active = activeKecamatan[kec];
           const item = document.createElement('div');
-          item.className = 'legend-item' + (active ? '' : ' disabled');
-          item.innerHTML = `
-            <div class="legend-color-box" style="background:${color}"></div>${kec}
-          `;
+          item.className = 'legend-item';
+          item.innerHTML = `<div class="legend-color-box" style="background:${color}"></div>${kec}`;
           item.onclick = () => {
             activeKecamatan[kec] = !activeKecamatan[kec];
             item.classList.toggle('disabled');
-            updatePolygonStyles();
+            geojsonLayer.eachLayer(layer => { geojsonLayer.resetStyle(layer); });
           };
           div.appendChild(item);
         }
-
         L.DomEvent.disableClickPropagation(div);
         return div;
       };
-
       legend.addTo(map);
     }
-
-    function updatePolygonStyles() {
-      geojsonLayer.eachLayer(layer => {
-        geojsonLayer.resetStyle(layer);
-      });
-    }
-
   </script>
 </body>
 </html>
