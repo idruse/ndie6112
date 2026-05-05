@@ -10,7 +10,7 @@
   <meta name="keywords" content="NDIE, Wilkerstat, SLS, Statistik, BPS, Pemetaan, GeoJSON, Leaflet, Kubu Raya">
   <meta name="author" content="Idrus Efendy">
 
-  <!-- Open Graph Meta (untuk sosial media preview) -->
+  <!-- Open Graph Meta -->
   <meta property="og:title" content="NDIE 6112 - Nampilin Detail Wilkerstat Ekspress">
   <meta property="og:description" content="Tampilkan detail wilayah kerja statistik (SLS) dengan cepat menggunakan peta interaktif NDIE 6112.">
   <meta property="og:type" content="website">
@@ -80,7 +80,6 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
 
-    /* Legenda styling */
     .legend {
       background: white;
       padding: 8px 12px;
@@ -169,147 +168,16 @@
     let markerLatLng;
 
     const colorsByKecamatan = {
-      'BATU AMPAR': '#e74c3c',       // Merah
-      'KUALA MANDOR-B': '#af7ac5',   // Ungu
-      'KUBU': '#5dade2',             // Biru Muda
-      'RASAU JAYA': '#48c9b0',       // Tosca
-      'SUNGAI AMBAWANG': '#f4d03f',  // Kuning
-      'SUNGAI KAKAP': '#eb984e',     // Oranye
-      'SUNGAI RAYA': '#58d68d',      // Hijau
-      'TELUK PAKEDAI': '#aab7b8',    // Abu-abu Kebiruan
-      'TERENTANG': '#34495e'         // Biru Gelap/Navy
-};
-
-const kodePosByDesa = {
-  "PANCA ROBA": "78393",
-  "KOREK": "78393",
-  "BENGKAREK": "78393",
-  "PUGUK": "78393",
-  "PASAK": "78393",
-  "PASAK PIANG": "78393",
-  "PELITA JAYA": "78391",
-  "BINTANG MAS": "78391",
-  "RASAU JAYA UMUM": "78382",
-  "RASAU JAYA SATU": "78382",
-  "RASAU JAYA TIGA": "78382",
-  "PARIT KELADI": "78391",
-  "PUNGGUR KAPUAS": "78391",
-  "PINANG LUAR": "78383",
-  "RENGAS KAPUAS": "78391",
-  "AIR PUTIH": "78383",
-  "RADAK BARU": "78385",
-  "SUNGAI RENGAS": "78391",
-  "SEPAKAT BARU": "78391",
-  "TELUK KAPUAS": "78391",
-  "SUNGAI BEMBAN": "78383",
-  "LIMBUNG": "78391",
-  "SUNGAI KUPAH": "78391",
-  "SERUAT DUA": "78383",
-  "MEKAR SARI": "78391",
-  "SERUAT TIGA": "78383",
-  "SUNGAI NIPAH": "78384",
-  "JERUJU BESAR": "78391",
-  "MADU SARI": "78393",
-  "AMBAWANG": "78393",
-  "SUNGAI SELAMAT": "78393",
-  "MADURA": "78391",
-  "GUNUNG TAMANG": "78391",
-  "PASIR PUTIH": "78391",
-  "ARUS DERAS": "78385",
-  "SUNGAI KAKAP": "78391",
-  "PULAU LIMBUNG": "78391",
-  "SUNGAI DERAS": "78384",
-  "SUNGAI BELIDAK": "78391",
-  "SUNGAI ASAM": "78391",
-  "PAL SEMBILAN": "78391",
-  "OLAK OLAK KUBU": "78383",
-  "KAMPUNG BARU": "78383",
-  "SUNGAI ITIK": "78391",
-  "SUNGAI AMBANGAH": "78391",
-  "TANJUNG HARAPAN": "78385",
-  "KUALA DUA": "78391",
-  "TELUK PAKEDAI DUA": "78384",
-  "SUNGAI BULAN": "78391",
-  "TELUK PAKEDAI HULU": "78384",
-  "TEBANG KACANG": "78391",
-  "BETUAH": "78385",
-  "TELUK PAKEDAI SATU": "78384",
-  "PADANG TIKAR II": "78385",
-  "PADANG TIKAR I": "78385",
-  "TELUK NIBUNG": "78385",
-  "NIPAH PANJANG": "78385",
-  "SUNGAI JAWI": "78391",
-  "LINTANG BATANG": "78391",
-  "AMBARAWA": "78385",
-  "TASIK MALAYA": "78385",
-  "SUNGAI BESAR": "78385",
-  "SUNGAI MALAYA": "78391",
-  "AMPERA RAYA": "78391",
-  "KUALA MANDOR A": "78392",
-  "KUALA BAKUNG": "78391",
-  "SIMPANG RAYA": "78391",
-  "SUNGAI BEMBAN TIMUR": "78383",
-  "MENGKALANG JAMBU": "78383",
-  "PEMATANG TUJUH": "78382",
-  "RASAU JAYA DUA": "78382",
-  "SUKULANTING": "78391",
-  "BATU AMPAR": "78385",
-  "PERMATA JAYA": "78391",
-  "SUMBER AGUNG": "78385",
-  "MUARA BARU": "78391",
-  "SUNGAI KERAWANG": "78383",
-  "KALI BANDUNG": "78391",
-  "MENGKALANG": "78383",
-  "SUNGAI RAYA DALAM": "78391",
-  "MEKAR BARU": "78391",
-  "PULAU JAMBU": "78391",
-  "PARIT BARU": "78391",
-  "TANJUNG BERINGIN": "78385",
-  "MUARA TIGA": "78385",
-  "MEDAN MAS": "78385",
-  "SUNGAI ENAU A": "78392",
-  "PADI JAYA": "78392",
-  "SUNGAI ENAU": "78392",
-  "KUALA MANDOR B": "78392",
-  "RETOK": "78392",
-  "KUBU PADI": "78392",
-  "SIMPANG KANAN": "78391",
-  "DURIAN": "78391",
-  "PUNGGUR KECIL": "78391",
-  "PUNGGUR BESAR": "78391",
-  "JANGKANG SATU": "78383",
-  "TANJUNG SALEH": "78391",
-  "KALIMAS": "78391",
-  "TELUK NANGKA": "78383",
-  "PINANG DALAM": "78383",
-  "SUNGAI RAYA": "78391",
-  "JANGKANG DUA": "78383",
-  "TANJUNG BUNGA": "78384",
-  "ARANG LIMBUNG": "78391",
-  "DABONG": "78383",
-  "SEPUK LAUT": "78391",
-  "KUALA KARANG": "78384",
-  "KAPUR": "78391",
-  "SUNGAI TERUS": "78383",
-  "SUNGAI RADAK SATU": "78385",
-  "SELAT REMIS": "78384",
-  "TELUK GELAM": "78384",
-  "KUBU": "78383",
-  "TERENTANG HILIR": "78394",
-  "PERMATA": "78385",
-  "SUNGAI RADAK DUA": "78385",
-  "TERENTANG HULU": "78394",
-  "SUNGAI AMBAWANG KUALA": "78393",
-  "SERUAT SATU": "78383",
-  "SUNGAI DUNGUN": "78391",
-  "SUNGAI NIBUNG": "78384",
-  "JAWA TENGAH": "78391",
-  "TELUK EMPENING": "78394",
-  "TELUK BAKUNG": "78393",
-  "TELUK BAYUR": "78385",
-  "MEGA TIMUR": "78393",
-  "LINGGA": "78393"
-};
+      'BATU AMPAR': '#e74c3c',
+      'KUALA MANDOR-B': '#af7ac5',
+      'KUBU': '#5dade2',
+      'RASAU JAYA': '#48c9b0',
+      'SUNGAI AMBAWANG': '#f4d03f',
+      'SUNGAI KAKAP': '#eb984e',
+      'SUNGAI RAYA': '#58d68d',
+      'TELUK PAKEDAI': '#aab7b8',
+      'TERENTANG': '#34495e'
+    };
     
     const activeKecamatan = {};
 
@@ -342,15 +210,13 @@ const kodePosByDesa = {
 
     function onEachFeature(feature, layer) {
       const props = feature.properties;
-      const kodePos = kodePosByDesa[props.nmdesa] || "Mbuh ya, nyong ra mudeng";
       if (props && props.nmsls) {
         const popupContent = `
           <div class="info">
             <strong>RT/RW:</strong> ${props.nmsls}<br>
             <strong>Kelurahan:</strong> ${props.nmdesa}<br>
             <strong>Kecamatan:</strong> ${props.nmkec}<br>
-            <strong>IDSLS:</strong> ${props.idsls}<br>
-            <strong>Kode Pos:</strong> ${kodePos}
+            <strong>IDSLS:</strong> ${props.idsls}
           </div>
         `;
         layer.bindPopup(popupContent);
@@ -418,57 +284,56 @@ const kodePosByDesa = {
     }
 
     function searchByKoordinat() {
-  const input = document.getElementById('koordinatInput').value.trim();
-  const [latStr, lngStr] = input.split(',');
+      const input = document.getElementById('koordinatInput').value.trim();
+      const [latStr, lngStr] = input.split(',');
 
-  const lat = parseFloat(latStr);
-  const lng = parseFloat(lngStr);
+      const lat = parseFloat(latStr);
+      const lng = parseFloat(lngStr);
 
-  if (isNaN(lat) || isNaN(lng)) {
-    alert("Format koordinat yang benar: -0.0263,109.3425");
-    return;
-  }
+      if (isNaN(lat) || isNaN(lng)) {
+        alert("Format koordinat yang benar: -0.0263,109.3425");
+        return;
+      }
 
-  const point = turf.point([lng, lat]);
-  let matchedFeature = null;
-  let matchedLayer = null;
+      const point = turf.point([lng, lat]);
+      let matchedFeature = null;
+      let matchedLayer = null;
 
-  geojsonLayer.eachLayer(layer => {
-    const polygon = layer.feature;
-    if (turf.booleanPointInPolygon(point, polygon)) {
-      matchedFeature = polygon.properties;
-      matchedLayer = layer;
+      geojsonLayer.eachLayer(layer => {
+        const polygon = layer.feature;
+        if (turf.booleanPointInPolygon(point, polygon)) {
+          matchedFeature = polygon.properties;
+          matchedLayer = layer;
+        }
+      });
+
+      if (markerLatLng) map.removeLayer(markerLatLng);
+
+      let popupContent = `
+        <div class="info">
+          <strong>Latitude:</strong> ${lat}<br>
+          <strong>Longitude:</strong> ${lng}<br><hr>
+      `;
+
+      if (matchedFeature) {
+        popupContent += `
+          <strong>RT/RW:</strong> ${matchedFeature.nmsls}<br>
+          <strong>Kelurahan:</strong> ${matchedFeature.nmdesa}<br>
+          <strong>Kecamatan:</strong> ${matchedFeature.nmkec}<br>
+          <strong>IDSLS:</strong> ${matchedFeature.idsls}
+        `;
+      } else {
+        popupContent += `<em>Lokasi tidak berada di dalam Wilkerstat Kota Pontianak.</em>`;
+      }
+
+      popupContent += `</div>`;
+
+      markerLatLng = L.marker([lat, lng]).addTo(map).bindPopup(popupContent).openPopup();
+
+      if (matchedLayer) highlightFeature(matchedLayer);
+
+      map.flyTo([lat, lng], 17, { duration: 1.5 });
     }
-  });
- const kodePos = matchedFeature ? (kodePosByDesa[matchedFeature.nmdesa] || "Tidak diketahui") : "-";
-  if (markerLatLng) map.removeLayer(markerLatLng);
-
-  let popupContent = `
-    <div class="info">
-      <strong>Latitude:</strong> ${lat}<br>
-      <strong>Longitude:</strong> ${lng}<br><hr>
-  `;
-
-  if (matchedFeature) {
-    popupContent += `
-      <strong>RT/RW:</strong> ${matchedFeature.nmsls}<br>
-      <strong>Kelurahan:</strong> ${matchedFeature.nmdesa}<br>
-      <strong>Kecamatan:</strong> ${matchedFeature.nmkec}<br>
-      <strong>IDSLS:</strong> ${matchedFeature.idsls}<br>
-      <strong>Kode pos:</strong> ${kodePos}
-    `;
-  } else {
-    popupContent += `<em>Lokasi tidak berada di dalam Wilkerstat Kota Pontianak.</em>`;
-  }
-
-  popupContent += `</div>`;
-
-  markerLatLng = L.marker([lat, lng]).addTo(map).bindPopup(popupContent).openPopup();
-
-  if (matchedLayer) highlightFeature(matchedLayer);
-
-  map.flyTo([lat, lng], 17, { duration: 1.5 });
-}
 
     function addLegend() {
       const legend = L.control({ position: 'bottomright' });
