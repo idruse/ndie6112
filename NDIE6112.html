@@ -76,7 +76,7 @@
     // lyrs=y adalah tipe Hybrid (Satelit + Nama Jalan/Tempat)
     // Gunakan lyrs=s jika ingin satelit murni tanpa tulisan
     
-    const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    const googleSatellite = L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
         maxZoom: 20,
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: '&copy; Google Maps'
