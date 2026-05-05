@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NDIE 6171 - Nampilin Detail Wilkerstat Express</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="NDIE 6171 adalah aplikasi pemetaan interaktif berbasis web untuk menampilkan detail wilayah kerja statistik (SLS) secara cepat dan akurat.">
+  <meta name="keywords" content="NDIE, Wilkerstat, SLS, Statistik, BPS, Pemetaan, GeoJSON, Leaflet, Pontianak">
+  <meta name="author" content="Yovie Wibowo">
+
+  <!-- Open Graph Meta (untuk sosial media preview) -->
+  <meta property="og:title" content="NDIE 6171 - Nampilin Detail Wilkerstat Ekspress">
+  <meta property="og:description" content="Tampilkan detail wilayah kerja statistik (SLS) dengan cepat menggunakan peta interaktif NDIE 6171.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yoviewibowo.github.io/ndie6171">
+  <meta property="og:image" content="https://yoviewibowo.github.io/ndie6171/assets/preview.jpg">
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://yoviewibowo.github.io/ndie6171/assets/favicon.png" type="image/png">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Turf.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f7fc;
+    }
+
+    header, footer {
+      background-color: #5e3a87;
+      color: white;
+      padding: 1em;
+      text-align: center;
+      background-image: radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 70%), radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 70%);
+    }
+
+    .search-container {
+      text-align: center;
+      margin: 1.5em auto;
+    }
+
+    .search-container input[type="text"] {
+      padding: 0.5em;
+      margin: 0.5em 0.25em;
+      width: 220px;
+      max-width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .search-container button {
+      padding: 0.6em 1.2em;
+      background-color: #5e3a87;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0.25em;
+    }
+
+    .search-container button:hover {
+      background-color: #7a4bb5;
+    }
+
+    #map {
+      height: 80vh;
+      width: 100%;
+    }
+
+    .info {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    /* Legenda styling */
+    .legend {
+      background: white;
+      padding: 8px 12px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      font-size: 14px;
+      line-height: 1.4em;
+      max-width: 200px;
+    }
+
+    .legend-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+      text-align: center;
+      color: #5e3a87;
+    }
+
+    .legend-item {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+      user-select: none;
+    }
+
+    .legend-color-box {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      flex-shrink: 0;
+    }
+
+    .legend-item.disabled .legend-color-box {
+      opacity: 0.3;
+      border-color: #999;
+    }
+
+    .legend-item.disabled {
+      color: #999;
+    }
+
+    @media screen and (max-width: 600px) {
+      .search-container input[type="text"] {
+        width: 90%;
+      }
+
+      .search-container button {
+        width: 90%;
+        margin-top: 0.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NDIE 6171 - Nampilin Detail Wilkerstat Express</h1>
+  </header>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Cari berdasarkan ID SLS...">
+    <button onclick="searchFeature()">Cari</button>
+    <br>
+   <input type="text" id="koordinatInput" placeholder="Lat,Lng contoh: -0.0263,109.3425">
+   <button onclick="searchByKoordinat()">Cari Koordinat</button>
+    <button onclick="resetSearch()">Reset</button>
+  </div>
+
+  <div id="map"></div>
+
+  <footer>
+    <p>&copy; 2025 NDIE 6171 | @yoviewibowo</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-0.0263, 109.3425], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let geojsonLayer;
+    let currentHighlighted;
+    let markerLatLng;
+
+    const colorsByKecamatan = {
+      'PONTIANAK SELATAN': '#ec7063', 
+      'PONTIANAK TENGGARA': '#bb8fce',
+      'PONTIANAK TIMUR': '#5dade2',
+      'PONTIANAK BARAT': '#45b39d',
+      'PONTIANAK KOTA': '#eb984e',
+      'PONTIANAK UTARA':'#5d6d7e'
+      
+    };
+
+    const kodePosByDesa = {
+  "BENUA MELAYU LAUT": "78123",
+  "BENUA MELAYU DARAT": "78122",
+  "PARIT TOKAYA": "78121",
+  "AKCAYA": "78121",
+  "KOTA BARU": "78121",
+  "BANGKA BELITUNG LAUT": "78124",
+  "BANGKA BELITUNG DARAT": "78124",
+  "BANSIR LAUT": "78124",
+  "BANSIR DARAT": "78124",
+  "PARIT MAYOR": "78231",
+  "BANJAR SERASAN": "78233",
+  "SAIGON": "78132",
+  "TANJUNG HULU": "78137",
+  "TANJUNG HILIR": "78236",
+  "DALAM BUGIS": "78235",
+  "TAMBELAN SAMPIT": "78234",
+  "PAL LIMA": "78114",
+  "SUNGAI JAWI DALAM": "78115",
+  "SUNGAI JAWI LUAR": "78113",
+  "SUNGAI BELIUNG": "78117",
+  "SUNGAI BANGKONG": "78116",
+  "DARAT SEKIP": "78117",
+  "TENGAH": "78111",
+  "MARIANA": "78112",
+  "SUNGAI JAWI": "78113",
+  "BATU LAYANG": "78244",
+  "SIANTAN HILIR": "78243",
+  "SIANTAN TENGAH": "78242",
+  "SIANTAN HULU": "78241"
+};
+    
+    const activeKecamatan = {};
+
+    function highlightFeature(layer) {
+      if (currentHighlighted) {
+        geojsonLayer.resetStyle(currentHighlighted);
+      }
+      currentHighlighted = layer;
+      layer.setStyle({
+        color: 'green',
+        weight: 3,
+        fillOpacity: 0.7
+      });
+      map.fitBounds(layer.getBounds());
+    }
+
+    function resetSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('koordinatInput').value = '';
+      if (currentHighlighted) {
+        geojsonLayer.resetStyle(currentHighlighted);
+        currentHighlighted = null;
+      }
+      if (markerLatLng) {
+        map.removeLayer(markerLatLng);
+        markerLatLng = null;
+      }
+      map.setView([-0.0263, 109.3425], 13);
+    }
+
+    function onEachFeature(feature, layer) {
+      const props = feature.properties;
+      const kodePos = kodePosByDesa[props.nmdesa] || "Mbuh ya, nyong ra mudeng";
+      if (props && props.nmsls) {
+        const popupContent = `
+          <div class="info">
+            <strong>RT/RW:</strong> ${props.nmsls}<br>
+            <strong>Kelurahan:</strong> ${props.nmdesa}<br>
+            <strong>Kecamatan:</strong> ${props.nmkec}<br>
+            <strong>IDSLS:</strong> ${props.idsls}<br>
+            <strong>Kode Pos:</strong> ${kodePos}
+          </div>
+        `;
+        layer.bindPopup(popupContent);
+        layer.on('mouseover', () => layer.setStyle({ color: 'orange', weight: 2, fillOpacity: 0.5 }));
+        layer.on('mouseout', () => {
+          if (layer !== currentHighlighted) {
+            geojsonLayer.resetStyle(layer);
+          }
+        });
+        layer.on('click', () => layer.openPopup());
+      }
+    }
+
+    function getPolygonStyle(feature) {
+      const kec = feature.properties.nmkec;
+      const color = colorsByKecamatan[kec] || '#999999'; 
+      const isActive = activeKecamatan[kec] !== false; 
+      return {
+        color: color,
+        weight: 2,
+        fillOpacity: isActive ? 0.3 : 0,
+        opacity: isActive ? 1 : 0
+      };
+    }
+
+    const geojsonUrl = 'https://raw.githubusercontent.com/yoviewibowo/ndie6171/main/Final_SLS_202516171.geojson';
+
+    fetch(geojsonUrl)
+      .then(res => res.json())
+      .then(data => {
+        data.features.forEach(f => {
+          const kec = f.properties.nmkec;
+          if (!(kec in activeKecamatan)) activeKecamatan[kec] = true;
+        });
+
+        geojsonLayer = L.geoJSON(data, {
+          style: getPolygonStyle,
+          onEachFeature: onEachFeature
+        }).addTo(map);
+        window.geojsonData = data;
+
+        addLegend();
+      })
+      .catch(err => {
+        console.error('Gagal memuat GeoJSON:', err);
+        alert('Gagal memuat data wilayah.');
+      });
+
+    function searchFeature() {
+      const input = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (!input || !geojsonLayer) return;
+
+      let found = false;
+      geojsonLayer.eachLayer(layer => {
+        const props = layer.feature.properties;
+        if (props.idsls.toLowerCase() === input) {
+          highlightFeature(layer);
+          layer.openPopup();
+          map.flyTo(layer.getBounds().getCenter(), 17, { duration: 1.5 });
+          found = true;
+        }
+      });
+
+      if (!found) alert('ID SLS tidak ditemukan.');
+    }
+
+    function searchByKoordinat() {
+  const input = document.getElementById('koordinatInput').value.trim();
+  const [latStr, lngStr] = input.split(',');
+
+  const lat = parseFloat(latStr);
+  const lng = parseFloat(lngStr);
+
+  if (isNaN(lat) || isNaN(lng)) {
+    alert("Format koordinat yang benar: -0.0263,109.3425");
+    return;
+  }
+
+  const point = turf.point([lng, lat]);
+  let matchedFeature = null;
+  let matchedLayer = null;
+
+  geojsonLayer.eachLayer(layer => {
+    const polygon = layer.feature;
+    if (turf.booleanPointInPolygon(point, polygon)) {
+      matchedFeature = polygon.properties;
+      matchedLayer = layer;
+    }
+  });
+ const kodePos = matchedFeature ? (kodePosByDesa[matchedFeature.nmdesa] || "Tidak diketahui") : "-";
+  if (markerLatLng) map.removeLayer(markerLatLng);
+
+  let popupContent = `
+    <div class="info">
+      <strong>Latitude:</strong> ${lat}<br>
+      <strong>Longitude:</strong> ${lng}<br><hr>
+  `;
+
+  if (matchedFeature) {
+    popupContent += `
+      <strong>RT/RW:</strong> ${matchedFeature.nmsls}<br>
+      <strong>Kelurahan:</strong> ${matchedFeature.nmdesa}<br>
+      <strong>Kecamatan:</strong> ${matchedFeature.nmkec}<br>
+      <strong>IDSLS:</strong> ${matchedFeature.idsls}<br>
+      <strong>Kode pos:</strong> ${kodePos}
+    `;
+  } else {
+    popupContent += `<em>Lokasi tidak berada di dalam Wilkerstat Kota Pontianak.</em>`;
+  }
+
+  popupContent += `</div>`;
+
+  markerLatLng = L.marker([lat, lng]).addTo(map).bindPopup(popupContent).openPopup();
+
+  if (matchedLayer) highlightFeature(matchedLayer);
+
+  map.flyTo([lat, lng], 17, { duration: 1.5 });
+}
+
+    function addLegend() {
+      const legend = L.control({ position: 'bottomright' });
+
+      legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = '<div class="legend-title">Legenda Kecamatan</div>';
+
+        for (const [kec, color] of Object.entries(colorsByKecamatan)) {
+          const active = activeKecamatan[kec];
+          const item = document.createElement('div');
+          item.className = 'legend-item' + (active ? '' : ' disabled');
+          item.innerHTML = `
+            <div class="legend-color-box" style="background:${color}"></div>${kec}
+          `;
+          item.onclick = () => {
+            activeKecamatan[kec] = !activeKecamatan[kec];
+            item.classList.toggle('disabled');
+            updatePolygonStyles();
+          };
+          div.appendChild(item);
+        }
+
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+      };
+
+      legend.addTo(map);
+    }
+
+    function updatePolygonStyles() {
+      geojsonLayer.eachLayer(layer => {
+        geojsonLayer.resetStyle(layer);
+      });
+    }
+
+  </script>
+</body>
+</html>
